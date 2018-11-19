@@ -1,7 +1,7 @@
 // Project 4a written by Darin Hunt & Ojasvi DSilva
 // This is a Header file for Project 4. 
 // It builds the board class and defines it's functions. 
-
+ 
 #ifndef board_h
 #define board_h
 #include <iostream>

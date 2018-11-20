@@ -47,6 +47,7 @@ public:
     vector <int> findBlankCell();
     bool isLegal(int i, int j, int k);
     void solveBoard();
+    int recursive; // keep track of recursive calls.
     
     
 private:
@@ -102,70 +103,6 @@ void board::initialize(ifstream &fin) //initializer
             findConflict(i, j, value[i][j],false); //sends false since it is before initial initialization
         }
 }
-bool board::isBlank(int i, int j)
-// Returns true if cell i,j is blank, and false otherwise.
-{
-    if (i < 1 || i > BoardSize || j < 1 || j > BoardSize)
-        throw rangeError("bad value in setCell");
-    
-    return (getCell(i,j) == Blank);
-} 
-void board::setCell(int x, int y, int z) //will assign a cell a value
-
-{
-    
-    cout << "adding " << z << " to cell " << x << "," << y << endl; //adds values
-    value[x][y] = z; //sets a new cell to a value z
-    findConflict(x,y,z,true);
-}
-
-
-ValueType board::getCell(int i, int j)
-// Returns the value stored in a cell.  Throws an exception
-// if bad values are passed.
-{
-    if (i >= 1 && i <= BoardSize && j >= 1 && j <= BoardSize)
-        return value[i][j];
-    else
-        throw rangeError("bad value in getCell");
-}
-
-
-
-ostream &operator<<(ostream &ostr, vector<int> &v)
-// Overloaded output operator for vector class.
-{
-    for (int i = 0; i < v.size(); i++)
-        ostr << v[i] << " ";
-    cout << endl;
-    return ostr;
-}
-
-bool board::isLegal(int i, int j, int k)
-{
-    square = squareNumber(i,j);
-    
-    if (c_columns[i][k]==true)
-    {
-        return false;
-    }
-    else if (c_rows[j][k]==true)
-    {
-        return false;
-    }
-    else if (c_square[square][k]==true)
-    {
-        return false;
-    }
-    else
-    {
-        return true; //means that the number is valid;
-    }
-}
-
- 
-
-
 
 int board::squareNumber(int i, int j)
 // Return the square number of cell i,j (counting from left to right,
@@ -176,9 +113,40 @@ int board::squareNumber(int i, int j)
     
     return SquareSize * ((i-1)/SquareSize) + (j-1)/SquareSize + 1;
 }
+ostream &operator<<(ostream &ostr, vector<int> &v)
+// Overloaded output operator for vector class.
+{
+    for (int i = 0; i < v.size(); i++)
+        ostr << v[i] << " ";
+    cout << endl;
+    return ostr;
+}
+ValueType board::getCell(int i, int j)
+// Returns the value stored in a cell.  Throws an exception
+// if bad values are passed.
+{
+    if (i >= 1 && i <= BoardSize && j >= 1 && j <= BoardSize)
+        return value[i][j];
+    else
+        throw rangeError("bad value in getCell");
+}
+void board::setCell(int x, int y, int z) //will assign a cell a value
 
+{
+    
+    cout << "adding " << z << " to cell " << x << "," << y << endl; //adds values
+    value[x][y] = z; //sets a new cell to a value z
+    findConflict(x,y,z,true);
+}
 
-
+bool board::isBlank(int i, int j)
+// Returns true if cell i,j is blank, and false otherwise.
+{
+    if (i < 1 || i > BoardSize || j < 1 || j > BoardSize)
+        throw rangeError("bad value in setCell");
+    
+    return (getCell(i,j) == Blank);
+} 
 void board::findConflict(int i, int j, int k, bool ba) //i and j are touples, k is the value and ba is before/after initilization
 {
     ofstream fout("stuff.txt");
@@ -207,8 +175,7 @@ void board::findConflict(int i, int j, int k, bool ba) //i and j are touples, k 
                         square = squareNumber(i,j); //finds what square to update
                         c_square[square][value[i][j]] = true;
                     }
-            }
-
+}
 void board::printConflicts()
 {
 	cout << "1  2  3  4  5  6  7  8  9" << endl << endl; //just for reference
@@ -245,7 +212,27 @@ void board::printConflicts()
     }
 }
 
-
+bool board::isLegal(int i, int j, int k)
+{
+    int square = squareNumber(i,j);
+    
+    if (c_columns[i][k]==true)
+    {
+        return false;
+    }
+    else if (c_rows[j][k]==true)
+    {
+        return false;
+    }
+    else if (c_square[square][k]==true)
+    {
+        return false;
+    }
+    else
+    {
+        return true; //means that the number is valid;
+    }
+}
 
 void board::clearCell(int x, int y, int z) //will clear a value
 
@@ -262,7 +249,7 @@ vector<int> board::findBlankCell()
 	int count = 0;
 	int check = 9;
 	nextCell.resize(2);
-	temp.resize(2);
+
 	for (int i = 1; i <= BoardSize; i++)
 	{
 		for (int j = 1; j <= BoardSize; j++)
@@ -276,15 +263,15 @@ vector<int> board::findBlankCell()
 				
 				if(isLegal(i,j,k)==1)
 				{
-					count ++
+					count ++;
 				}
 			}
 			
-		if (count < min) 
+		if (count < check) 
 		{
-			nextCellell[0] = i;
+			nextCell[0] = i;
 			nextCell[1] = j;
-			min = count;
+			check = count;
 			
 		}			
 		}
@@ -320,19 +307,19 @@ void board::solveBoard()
 {
  //call this when initilize has already been called as well as an intiial conflict
  vector <int> nextCell;
- nextCell = findBlankCell;
+ nextCell = findBlankCell();
    if (Solved()==1)// if board is fully solved
    {
    	
-   	print() 
+   	print() ;
    }
    else
    {
    	int i=nextCell[0];
-	int j= nextCell[1];
+	int j=nextCell[1];
 	for (int k = MinValue; k<=MaxValue; k++)
 	{
-		if(isLegal(i,j,k) ==1)
+		if(isLegal(i,j,k)==1)
 			
 			{
 				setCell[i,j,k]; 

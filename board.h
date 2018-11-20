@@ -322,7 +322,8 @@ void board::solveBoard()
 		if(isLegal(i,j,k)==1)
 			
 			{
-				setCell[i,j,k]; 
+				setCell(i,j,k); 
+				solveBoard();
 			
 			}
 			

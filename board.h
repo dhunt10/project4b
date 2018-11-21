@@ -1,4 +1,4 @@
-// Project 4a written by Darin Hunt & Ojasvi DSilva
+// Project 4b written by Darin Hunt & Ojasvi DSilva
 // This is a Header file for Project 4. 
 // It builds the board class and defines it's functions. 
 
@@ -43,10 +43,10 @@ public:
     ValueType getCell(int, int);
     int squareNumber(int i, int j);
     bool Solved();
-    void clearCell(int x, int y, int z);
-    vector <int> findBlankCell();
-    bool isLegal(int i, int j, int k);
-    void solveBoard();
+    
+    vector <int> findBlankCell(); // find the next empty cell
+    bool isLegal(int i, int j, int k); //find if number can be used in a cell
+    void solveBoard();// check is board is solved
     int recursive; // keep track of recursive calls.
     
     
@@ -78,6 +78,8 @@ void board::clear() //clears board
         {
             value[i][j] = Blank;
         }
+    recursive =0;
+    	
 }
 
 
@@ -130,14 +132,6 @@ ValueType board::getCell(int i, int j)
     else
         throw rangeError("bad value in getCell");
 }
-void board::setCell(int x, int y, int z) //will assign a cell a value
-
-{
-    
-    cout << "adding " << z << " to cell " << x << "," << y << endl; //adds values
-    value[x][y] = z; //sets a new cell to a value z
-    findConflict(x,y,z,true);
-}
 
 bool board::isBlank(int i, int j)
 // Returns true if cell i,j is blank, and false otherwise.
@@ -147,6 +141,29 @@ bool board::isBlank(int i, int j)
     
     return (getCell(i,j) == Blank);
 } 
+
+
+void board::setCell(int x, int y, int z) //will assign a cell a value
+
+{
+    
+   if ( z == -1)
+   {
+   	value[x][y] = - 1; //sets it to -1, which means empty
+    findConflict(x,y,z,true); //sends 'true' so that it knows to save the value back to -1
+   }
+   
+   else 
+   {
+   	
+   	value[x][y] = z; //sets a new cell to a value z
+    findConflict(x,y,z,true);
+   	
+   	
+   }
+    
+}
+
 void board::findConflict(int i, int j, int k, bool ba) //i and j are touples, k is the value and ba is before/after initilization
 {
     ofstream fout("stuff.txt");
@@ -211,20 +228,20 @@ void board::printConflicts()
         cout << endl;
     }
 }
-
+// check what numbers can be used for a cell
 bool board::isLegal(int i, int j, int k)
 {
     int square = squareNumber(i,j);
     
-    if (c_columns[i][k]==true)
+    if (c_columns[i][k]==true) // checks columns
     {
         return false;
     }
-    else if (c_rows[j][k]==true)
+    else if (c_rows[j][k]==true) //checks rows
     {
         return false;
     }
-    else if (c_square[square][k]==true)
+    else if (c_square[square][k]==true) // checks square
     {
         return false;
     }
@@ -234,59 +251,7 @@ bool board::isLegal(int i, int j, int k)
     }
 }
 
-void board::clearCell(int x, int y, int z) //will clear a value
 
-{
-	cout << "removing " << z << " to cell " << x << "," << y << endl; //removes
-    value[x][y] = - 1; //sets it to -1, which means empty
-    findConflict(x,y,z,true); //sends 'true' so that it knows to save the value back to -1
-}
-
-
-vector<int> board::findBlankCell()
-{
-    vector <int> nextCell;
-	int count = 0;
-	int check = 9;
-	nextCell.resize(2);
-
-	for (int i = 1; i <= BoardSize; i++)
-	{
-		for (int j = 1; j <= BoardSize; j++)
-		{
-				
-		if (isBlank(i,j)==1)
-		
-		{
-			for(int k = 1; k <= check; k++)
-			{
-				
-				if(isLegal(i,j,k)==1)
-				{
-					count ++;
-				}
-			}
-			
-		if (count < check) 
-		{
-			nextCell[0] = i;
-			nextCell[1] = j;
-			check = count;
-			
-		}			
-		}
-			
-			
-			
-			
-		}
-		
-		
-		
-		
-	}
-	return nextCell;
-} 
 
 bool board::Solved() //checks all aspects of the board, if no spacs are blank it is solved
 {
@@ -300,30 +265,78 @@ bool board::Solved() //checks all aspects of the board, if no spacs are blank it
             }
         }
     }
+   
     return true; //no spaces are blank
 } 
+vector<int> board::findBlankCell() // finds the next empty cell
+{
+    vector <int> nextCell;
+	int count;
+	int check = 9;
+	nextCell.resize(2);
+
+	for (int i = 1; i <= BoardSize; i++)
+	{
+		for (int j = 1; j <= BoardSize; j++)
+		{
+				
+		if (isBlank(i,j)==1) // checks if cell is blank
+		
+		{
+			count =0;
+			for(int k = 1; k <= check; k++)
+				{
+				
+				if(isLegal(i,j,k)==1)
+					{
+					count ++;
+						}
+					}
+			
+		if (count < check) 
+			{
+			// getting cell location
+			nextCell[0] = i; 
+			nextCell[1] = j;
+			check = count;
+			
+				}			
+			}	
+			
+			
+		}
+			
+		
+	}
+	return nextCell;
+} 
+
+
+
 
 void board::solveBoard()
 {
  //call this when initilize has already been called as well as an intiial conflict
  vector <int> nextCell;
  nextCell = findBlankCell();
+  recursive++;
    if (Solved()==1)// if board is fully solved
    {
    	
    	print() ;
    }
-   else
+   else // if cell not solved
    {
+   	// setting cell location
    	int i=nextCell[0];
 	int j=nextCell[1];
 	for (int k = MinValue; k<=MaxValue; k++)
 	{
-		if(isLegal(i,j,k)==1)
+		if(isLegal(i,j,k)==1) // checking if number can go into cell
 			
 			{
-				setCell(i,j,k); 
-				solveBoard();
+				setCell(i,j,k); // placing number into cell
+				solveBoard(); // recursive call
 			
 			}
 			
@@ -331,6 +344,9 @@ void board::solveBoard()
    	
    }
 }
+
+  
+ 
 
 void board::print()
 // Prints the current board.
